@@ -58,7 +58,7 @@ Se l'utente chiede esplicitamente di usare termini diagnostici, **rispondi propo
 - **Tipografia**: Instrument Serif (display) + Geist (sans) + Geist Mono (data) via Google Fonts
 
 ### Direzione futura (fase 1+, dopo seed)
-- Frontend: migrazione a **Next.js 14 + TypeScript + Tailwind** quando serve routing/auth
+- Frontend: migrazione a **Next.js (current LTS) + TypeScript + Tailwind** quando serve routing/auth
 - CV ML: **ONNX Runtime Web** o **TensorFlow.js** per inferenza on-device
 - Backend (solo se necessario): **FastAPI** Python o **Hono** TS, mai PHP/Express legacy
 - Training: **PyTorch** in `notebooks/`, export ONNX
