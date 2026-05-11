@@ -74,6 +74,22 @@ coverage/
 # Le immagini oculari sono dati biometrici ex art. 9 GDPR.
 # Anche durante sviluppo, non versionare nulla di reale.
 # ============================================================
+
+# Block-by-default: nessun raster nel repo. Logo, screenshot di UI
+# non-clinica e illustrazioni del README vanno in assets/ (eccezione
+# sotto). Qualunque foto di occhi, congiuntive, sclera, pupille,
+# pazienti, dataset di training: vietata, indipendentemente dal path.
+*.jpg
+*.jpeg
+*.png
+*.webp
+*.heic
+*.heif
+*.tif
+*.tiff
+*.bmp
+!assets/**
+
 data/raw/
 data/processed/
 data/private/
