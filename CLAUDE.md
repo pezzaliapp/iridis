@@ -30,13 +30,18 @@ Queste affermazioni sono regolatoriamente vincolanti e non vanno mai ammorbidite
 
 Nell'UI utente, nel README, nei messaggi di commit, nelle stringhe di codice user-facing, **sostituire sempre**:
 
+> *La regola si applica anche alle forme verbali, aggettivali e derivate dei termini elencati (es. "diagnostico", "refertare", "patologico").*
+
 | Mai usare | Usare invece |
 |---|---|
 | "diagnosi" | "indicazione preliminare" / "segnale" |
-| "ti diagnostico X" | "rilevato pattern compatibile con X — verificare con medico" |
-| "referto" | "report dimostrativo" |
+| "diagnostica" / "diagnostico" (sostantivo o aggettivo) | "screening" / "di screening" |
+| "ti diagnostico X" | "rilevato pattern colorimetrico atipico — verificare con un medico" |
+| "compatibile con [patologia X]" | "pattern colorimetrico atipico — verificare con un medico" |
+| "referto", "refertazione", "refertare" | "report dimostrativo", "documentare il risultato" |
 | "patologia confermata" | "possibile pattern, conferma clinica necessaria" |
 | "rilevamento di malattia" | "stima di un biomarcatore" |
+| "Clinical [Screening / Prototype / …]" come framing del prodotto | "Ocular Screening", "Eye Screening Demo" |
 | "il paziente" | "l'utente" (non siamo in contesto clinico) |
 
 **Motivo**: l'art. 2 del Regolamento UE 2017/745 (MDR) definisce dispositivo medico qualunque software *"destinato a diagnosi, prevenzione, monitoraggio, predizione, prognosi, trattamento o attenuazione di malattia"*. Le parole della colonna sinistra ci portano in MDR classe IIa con obbligo di marcatura CE e organismo notificato. Le parole della colonna destra no.
