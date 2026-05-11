@@ -50,6 +50,15 @@ Se l'utente chiede esplicitamente di usare termini diagnostici, **rispondi propo
 
 ## 4 · Stack tecnico
 
+### Workflow di sviluppo locale
+
+Dal refactor a moduli ES in poi, lo sviluppo locale richiede un mini server HTTP. Browser come Chrome e Firefox bloccano `import` / `export` tra file `.mjs` aperti via `file://` per restrizioni CORS sulla null-origin: aprire `index.html` con doppio click non funziona più.
+
+- **Avvio**: `python3 -m http.server 8000` dalla root del repo (Python è built-in su macOS, zero dipendenze).
+- **URL**: http://localhost:8000
+- **Vecchio workflow da dismettere**: il "doppio click su `index.html`" smette di funzionare a partire dal commit che converte `<script>` in `<script type="module">`.
+- **Produzione**: in deploy (GitHub Pages, `alessandropezzali.it/iridis`) non cambia nulla — il sito gira sempre via HTTP, il vincolo esiste solo in dev locale.
+
 ### POC attuale (fase 0)
 - **Frontend**: HTML + vanilla JS + Tailwind via CDN, single-file `index.html`
 - **Computer vision**: Canvas API + funzioni di conversione colore implementate inline (`rgbToLab`, `rgbToHsv`)
