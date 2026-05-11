@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IRIDIS · Clinical Screening Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        serif: ['"Instrument Serif"', 'serif'],
+        sans: ['Geist', 'system-ui', 'sans-serif'],
+        mono: ['"Geist Mono"', 'monospace'],
+      },
+      colors: {
+        ink: '#1a1814',
+        paper: '#f5f1e8',
+        cream: '#ebe4d3',
+        amber: '#c8841a',
+        ember: '#a44a1a',
+        moss: '#5a6b3a',
+        clay: '#8a7a5c',
+      }
+    }
+  }
+}
+</script>
+<style>
+  body {
+    background: #f5f1e8;
+    background-image:
+      radial-gradient(at 15% 20%, rgba(200, 132, 26, 0.06) 0px, transparent 50%),
+      radial-gradient(at 85% 80%, rgba(90, 107, 58, 0.05) 0px, transparent 50%);
+    color: #1a1814;
+  }
+  .grain {
+    position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0.4;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+  }
+  .marquee-num {
+    font-feature-settings: "tnum", "lnum";
+  }
+  .border-ink-soft { border-color: rgba(26,24,20,0.15); }
+  .hr-dotted {
+    border: none;
+    border-top: 1px dashed rgba(26,24,20,0.25);
+  }
+  #video, #canvas, #overlay {
+    transform: scaleX(-1);
+  }
+  .roi-btn.active {
+    background: #1a1814;
+    color: #f5f1e8;
+  }
+  .meter-fill {
+    transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  details > summary { list-style: none; cursor: pointer; }
+  details > summary::-webkit-details-marker { display: none; }
+  details[open] .chev { transform: rotate(45deg); }
+  .chev { transition: transform 0.2s; }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  .pulse-dot { animation: pulse-dot 1.4s infinite; }
+  .stagger-in { opacity: 0; transform: translateY(8px); animation: in 0.6s forwards; }
+  @keyframes in { to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body class="font-sans antialiased min-h-screen">
+<div class="grain"></div>
+
+<!-- ============== TOP BAR ============== -->
+<header class="relative z-10 border-b border-ink-soft">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 py-5 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="13" stroke="#1a1814" stroke-width="1.5"/>
+        <circle cx="14" cy="14" r="6" fill="#c8841a"/>
+        <circle cx="14" cy="14" r="2.5" fill="#1a1814"/>
+      </svg>
+      <div>
+        <div class="font-serif text-xl leading-none">Iridis</div>
+        <div class="font-mono text-[10px] tracking-[0.2em] text-clay uppercase mt-0.5">Clinical Screening · POC v0.1</div>
+      </div>
+    </div>
+    <nav class="hidden md:flex items-center gap-8 text-sm font-medium">
+      <a href="#prototype" class="hover:text-amber transition">Demo</a>
+      <a href="#science" class="hover:text-amber transition">Scienza</a>
+      <a href="#roadmap" class="hover:text-amber transition">Roadmap</a>
+      <a href="#opportunity" class="hover:text-amber transition">Mercato</a>
+    </nav>
+    <div class="font-mono text-[10px] tracking-wider text-clay uppercase">
+      <span class="inline-block w-1.5 h-1.5 bg-moss rounded-full pulse-dot mr-1.5"></span>
+      Live prototype
+    </div>
+  </div>
+</header>
+
+<!-- ============== HERO ============== -->
+<section class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 pt-20 pb-12">
+  <div class="grid lg:grid-cols-12 gap-10">
+    <div class="lg:col-span-8 stagger-in">
+      <div class="font-mono text-xs tracking-[0.25em] uppercase text-amber mb-6">
+        Non-invasive ocular biomarkers · smartphone-grade
+      </div>
+      <h1 class="font-serif text-6xl lg:text-7xl leading-[0.95] tracking-tight mb-8">
+        Lo schermo<br>
+        <em class="text-amber">come prima visita.</em>
+      </h1>
+      <p class="text-lg leading-relaxed max-w-xl text-ink/80">
+        Da una singola fotografia dell'occhio, Iridis stima tre biomarcatori clinicamente validati: 
+        <strong class="text-ink">ittero</strong> dalla sclera, 
+        <strong class="text-ink">anemia</strong> dalla congiuntiva, 
+        <strong class="text-ink">cataratta</strong> dal riflesso pupillare. 
+        Screening di prossimità, prima del laboratorio.
+      </p>
+    </div>
+    <div class="lg:col-span-4 lg:border-l border-ink-soft lg:pl-10 flex flex-col justify-end">
+      <div class="space-y-4 font-mono text-xs">
+        <div class="flex justify-between border-b border-ink-soft pb-2">
+          <span class="text-clay uppercase tracking-wider">Stadio</span>
+          <span class="font-medium">Pre-seed · POC</span>
+        </div>
+        <div class="flex justify-between border-b border-ink-soft pb-2">
+          <span class="text-clay uppercase tracking-wider">Classe MDR</span>
+          <span class="font-medium">IIa (target)</span>
+        </div>
+        <div class="flex justify-between border-b border-ink-soft pb-2">
+          <span class="text-clay uppercase tracking-wider">Pipeline</span>
+          <span class="font-medium">3 biomarker</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-clay uppercase tracking-wider">Validation TRL</span>
+          <span class="font-medium">2 → 4</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== PROTOTYPE ============== -->
+<section id="prototype" class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 py-12">
+  <div class="flex items-baseline justify-between mb-8 border-b border-ink-soft pb-4">
+    <div>
+      <div class="font-mono text-[10px] tracking-[0.25em] uppercase text-clay mb-2">§01 · Demo interattiva</div>
+      <h2 class="font-serif text-4xl">Prova il prototipo.</h2>
+    </div>
+    <div class="text-xs text-clay font-mono hidden md:block">
+      Le immagini non lasciano questo browser.
+    </div>
+  </div>
+
+  <div class="grid lg:grid-cols-12 gap-8">
+
+    <!-- LEFT: capture -->
+    <div class="lg:col-span-7">
+      <div class="bg-ink rounded-sm overflow-hidden relative aspect-[4/3]" id="capture-frame">
+        <video id="video" class="w-full h-full object-cover hidden" autoplay playsinline muted></video>
+        <canvas id="canvas" class="w-full h-full object-contain hidden"></canvas>
+        <canvas id="overlay" class="absolute inset-0 w-full h-full hidden pointer-events-none"></canvas>
+        <div id="placeholder" class="absolute inset-0 flex flex-col items-center justify-center text-paper/70">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none" class="mb-4 opacity-60">
+            <circle cx="32" cy="32" r="20" stroke="currentColor" stroke-width="1.5"/>
+            <circle cx="32" cy="32" r="8" fill="currentColor"/>
+            <circle cx="29" cy="29" r="2" fill="#1a1814"/>
+          </svg>
+          <div class="font-mono text-xs tracking-wider uppercase">In attesa di acquisizione</div>
+        </div>
+        <!-- ROI selection overlay handled via overlay canvas -->
+        <div id="capture-hint" class="absolute top-4 left-4 right-4 hidden">
+          <div class="bg-paper/95 backdrop-blur text-ink text-xs font-mono px-3 py-2 rounded-sm">
+            <span id="hint-text">Trascina sull'immagine per selezionare la regione d'interesse.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="mt-4 flex flex-wrap gap-3">
+        <button id="btn-cam" class="px-4 py-2.5 bg-ink text-paper text-sm font-medium hover:bg-amber transition rounded-sm flex items-center gap-2">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h3l1-1.5h4L11 4h3v9H2V4z" stroke="currentColor" stroke-width="1.2"/><circle cx="8" cy="8.5" r="2.5" stroke="currentColor" stroke-width="1.2"/></svg>
+          Avvia fotocamera
+        </button>
+        <button id="btn-snap" class="px-4 py-2.5 bg-amber text-paper text-sm font-medium hover:bg-ember transition rounded-sm hidden">
+          Scatta
+        </button>
+        <button id="btn-upload" class="px-4 py-2.5 border border-ink text-ink text-sm font-medium hover:bg-ink hover:text-paper transition rounded-sm">
+          Carica immagine
+        </button>
+        <input type="file" id="file-input" accept="image/*" class="hidden">
+        <button id="btn-reset" class="px-4 py-2.5 text-clay text-sm font-medium hover:text-ink transition rounded-sm hidden">
+          ↺ Reset
+        </button>
+      </div>
+
+      <!-- ROI selectors -->
+      <div id="roi-controls" class="mt-6 hidden">
+        <div class="font-mono text-[10px] tracking-[0.2em] uppercase text-clay mb-3">Annotazione regioni</div>
+        <div class="flex flex-wrap gap-2">
+          <button data-roi="sclera" class="roi-btn px-3 py-2 border border-ink text-sm rounded-sm transition flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-amber"></span>
+            Sclera
+          </button>
+          <button data-roi="conjunctiva" class="roi-btn px-3 py-2 border border-ink text-sm rounded-sm transition flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-ember"></span>
+            Congiuntiva
+          </button>
+          <button data-roi="pupil" class="roi-btn px-3 py-2 border border-ink text-sm rounded-sm transition flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-ink"></span>
+            Pupilla
+          </button>
+          <button id="btn-analyze" class="ml-auto px-4 py-2 bg-moss text-paper text-sm font-medium rounded-sm hover:bg-ink transition disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+            Analizza →
+          </button>
+        </div>
+        <div class="mt-3 font-mono text-[11px] text-clay" id="roi-status">
+          0 / 3 regioni annotate
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: results -->
+    <div class="lg:col-span-5">
+      <div class="border border-ink-soft bg-paper/60 backdrop-blur-sm rounded-sm">
+        <div class="px-5 py-4 border-b border-ink-soft flex items-center justify-between">
+          <div class="font-mono text-[10px] tracking-[0.2em] uppercase">Refertazione</div>
+          <div class="font-mono text-[10px] text-clay" id="report-ts">—</div>
+        </div>
+
+        <!-- JAUNDICE -->
+        <div class="px-5 py-5 border-b border-ink-soft" id="card-jaundice">
+          <div class="flex items-baseline justify-between mb-1">
+            <div class="font-serif text-2xl">Ittero</div>
+            <div class="font-mono text-[10px] uppercase tracking-wider text-clay">Sclera · CIE Lab b*</div>
+          </div>
+          <div class="font-mono text-[11px] text-clay mb-3">Indice di bilirubinemia indiretta</div>
+
+          <div class="flex items-end gap-4 mb-3">
+            <div class="marquee-num font-serif text-5xl leading-none" data-value="jaundice">—</div>
+            <div class="text-xs text-clay pb-1">unità b*</div>
+          </div>
+
+          <div class="h-1.5 bg-cream rounded-full overflow-hidden mb-2">
+            <div class="meter-fill h-full bg-amber" data-meter="jaundice" style="width: 0%"></div>
+          </div>
+          <div class="flex justify-between text-[10px] font-mono text-clay">
+            <span>Normale</span><span>Borderline</span><span>Patologico</span>
+          </div>
+
+          <div class="mt-3 text-sm" data-verdict="jaundice">
+            <span class="text-clay">In attesa di analisi…</span>
+          </div>
+        </div>
+
+        <!-- ANEMIA -->
+        <div class="px-5 py-5 border-b border-ink-soft" id="card-anemia">
+          <div class="flex items-baseline justify-between mb-1">
+            <div class="font-serif text-2xl">Anemia</div>
+            <div class="font-mono text-[10px] uppercase tracking-wider text-clay">Congiuntiva · pallor index</div>
+          </div>
+          <div class="font-mono text-[11px] text-clay mb-3">Proxy emoglobinico da rosso congiuntivale</div>
+
+          <div class="flex items-end gap-4 mb-3">
+            <div class="marquee-num font-serif text-5xl leading-none" data-value="anemia">—</div>
+            <div class="text-xs text-clay pb-1">indice 0–100</div>
+          </div>
+
+          <div class="h-1.5 bg-cream rounded-full overflow-hidden mb-2">
+            <div class="meter-fill h-full bg-ember" data-meter="anemia" style="width: 0%"></div>
+          </div>
+          <div class="flex justify-between text-[10px] font-mono text-clay">
+            <span>Pallore</span><span>Borderline</span><span>Roseo</span>
+          </div>
+
+          <div class="mt-3 text-sm" data-verdict="anemia">
+            <span class="text-clay">In attesa di analisi…</span>
+          </div>
+        </div>
+
+        <!-- CATARACT -->
+        <div class="px-5 py-5" id="card-cataract">
+          <div class="flex items-baseline justify-between mb-1">
+            <div class="font-serif text-2xl">Cataratta</div>
+            <div class="font-mono text-[10px] uppercase tracking-wider text-clay">Pupilla · opacity score</div>
+          </div>
+          <div class="font-mono text-[11px] text-clay mb-3">Riflesso pupillare e omogeneità</div>
+
+          <div class="flex items-end gap-4 mb-3">
+            <div class="marquee-num font-serif text-5xl leading-none" data-value="cataract">—</div>
+            <div class="text-xs text-clay pb-1">opacity index</div>
+          </div>
+
+          <div class="h-1.5 bg-cream rounded-full overflow-hidden mb-2">
+            <div class="meter-fill h-full bg-ink" data-meter="cataract" style="width: 0%"></div>
+          </div>
+          <div class="flex justify-between text-[10px] font-mono text-clay">
+            <span>Trasparente</span><span>Velata</span><span>Opaca</span>
+          </div>
+
+          <div class="mt-3 text-sm" data-verdict="cataract">
+            <span class="text-clay">In attesa di analisi…</span>
+          </div>
+        </div>
+
+        <div class="px-5 py-3 bg-cream/50 text-[10px] font-mono text-clay leading-relaxed">
+          ⚠ Output dimostrativo. Nessun valore costituisce diagnosi medica.
+          Algoritmi euristici, non ancora validati clinicamente.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== SCIENCE ============== -->
+<section id="science" class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 py-20">
+  <div class="grid lg:grid-cols-12 gap-10 border-t border-ink-soft pt-10">
+    <div class="lg:col-span-4">
+      <div class="font-mono text-[10px] tracking-[0.25em] uppercase text-clay mb-2">§02 · Fondamento scientifico</div>
+      <h2 class="font-serif text-4xl leading-tight mb-6">Tre canali,<br>una sola fotografia.</h2>
+      <p class="text-sm leading-relaxed text-ink/80">
+        Ogni biomarcatore poggia su letteratura clinica revisionata. 
+        Il prototipo implementa versioni euristiche e trasparenti degli algoritmi 
+        — non scatole nere — per dimostrare la fattibilità tecnica.
+      </p>
+    </div>
+
+    <div class="lg:col-span-8 space-y-1">
+      <details class="border-t border-ink-soft py-5">
+        <summary class="flex items-center justify-between">
+          <div>
+            <div class="font-mono text-[10px] text-amber tracking-wider uppercase mb-1">01 · Ittero</div>
+            <div class="font-serif text-2xl">Bilirubina da sclera (Lab b*)</div>
+          </div>
+          <span class="chev font-serif text-2xl text-clay">+</span>
+        </summary>
+        <div class="mt-4 grid md:grid-cols-2 gap-6 text-sm leading-relaxed">
+          <div>
+            <p class="mb-3">La sclera vira al giallo con bilirubina sierica elevata. Convertendo in spazio CIE Lab, il canale <code class="font-mono bg-cream px-1">b*</code> (asse blu–giallo) mostra correlazione lineare con bilirubina totale.</p>
+            <p>Mariakakis et al. (2017, UbiComp) con BiliScreen hanno riportato Pearson r≈0.89 tra colorimetria sclerale e bilirubina sierica in adulti.</p>
+          </div>
+          <div class="bg-ink text-paper p-4 rounded-sm font-mono text-xs leading-relaxed">
+b_star = mean(Lab[ROI_sclera].b)<br>
+filter: 0.1 &lt; L &lt; 0.95<br>
+bilirubin_proxy = max(0, b_star - 5)<br>
+risk = sigmoid((b_star - 12) / 4)
+          </div>
+        </div>
+      </details>
+
+      <details class="border-t border-ink-soft py-5">
+        <summary class="flex items-center justify-between">
+          <div>
+            <div class="font-mono text-[10px] text-ember tracking-wider uppercase mb-1">02 · Anemia</div>
+            <div class="font-serif text-2xl">Pallor congiuntivale</div>
+          </div>
+          <span class="chev font-serif text-2xl text-clay">+</span>
+        </summary>
+        <div class="mt-4 grid md:grid-cols-2 gap-6 text-sm leading-relaxed">
+          <div>
+            <p class="mb-3">La congiuntiva palpebrale inferiore impallidisce con emoglobina ridotta. Il canale <code class="font-mono bg-cream px-1">a*</code> (rosso–verde) e la saturazione HSV catturano la perdita di rosso.</p>
+            <p>Mannino et al. (Nature Comm. 2018) con app "Sanguine" mostrano AUC 0.82 contro CBC di laboratorio.</p>
+          </div>
+          <div class="bg-ink text-paper p-4 rounded-sm font-mono text-xs leading-relaxed">
+a_star = mean(Lab[ROI_conj].a)<br>
+sat = mean(HSV[ROI_conj].s)<br>
+pallor = 100 - (a_star × 2 + sat × 50)<br>
+hb_risk = clip(pallor / 100, 0, 1)
+          </div>
+        </div>
+      </details>
+
+      <details class="border-t border-b border-ink-soft py-5">
+        <summary class="flex items-center justify-between">
+          <div>
+            <div class="font-mono text-[10px] tracking-wider uppercase mb-1">03 · Cataratta</div>
+            <div class="font-serif text-2xl">Riflesso pupillare</div>
+          </div>
+          <span class="chev font-serif text-2xl text-clay">+</span>
+        </summary>
+        <div class="mt-4 grid md:grid-cols-2 gap-6 text-sm leading-relaxed">
+          <div>
+            <p class="mb-3">La pupilla normale è otticamente nera (o restituisce red reflex con flash). L'opacità del cristallino produce riflessi biancastri e disomogenei.</p>
+            <p>Studi su CRADLE (Munson et al., 2019, Science TM) usano leucocoria su foto smartphone per screening di retinoblastoma pediatrico — meccanismo affine.</p>
+            <p class="mt-2 text-clay text-xs italic">Caveat: forte dipendenza dall'illuminazione. Richiederà standardizzazione con flash controllato in versione mobile.</p>
+          </div>
+          <div class="bg-ink text-paper p-4 rounded-sm font-mono text-xs leading-relaxed">
+brightness = mean(V[ROI_pupil])<br>
+variance = std(V[ROI_pupil])<br>
+opacity = brightness × 0.7 + variance × 0.3<br>
+score = clip(opacity × 100, 0, 100)
+          </div>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============== ROADMAP ============== -->
+<section id="roadmap" class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 py-20">
+  <div class="border-t border-ink-soft pt-10">
+    <div class="font-mono text-[10px] tracking-[0.25em] uppercase text-clay mb-2">§03 · Roadmap clinica e regolatoria</div>
+    <h2 class="font-serif text-4xl mb-12">Dal prototipo alla CE.</h2>
+
+    <div class="grid md:grid-cols-4 gap-6">
+      <div class="border-t-2 border-ink pt-4">
+        <div class="font-mono text-[10px] tracking-wider text-amber uppercase mb-2">Fase 0 · Oggi</div>
+        <div class="font-serif text-xl mb-2">Proof of concept</div>
+        <p class="text-xs leading-relaxed text-ink/70">Algoritmi euristici trasparenti. Pipeline immagine → score funzionante. Demo investitori.</p>
+      </div>
+      <div class="border-t-2 border-clay pt-4">
+        <div class="font-mono text-[10px] tracking-wider text-clay uppercase mb-2">Fase 1 · 6 mesi</div>
+        <div class="font-serif text-xl mb-2">Dataset & ML</div>
+        <p class="text-xs leading-relaxed text-ink/70">Raccolta 5.000+ immagini paired con esami ematici. CNN compatte (MobileNet/EfficientNet). Partnership 2 reparti ospedalieri.</p>
+      </div>
+      <div class="border-t-2 border-clay/50 pt-4">
+        <div class="font-mono text-[10px] tracking-wider text-clay uppercase mb-2">Fase 2 · 12–18 mesi</div>
+        <div class="font-serif text-xl mb-2">Studio clinico</div>
+        <p class="text-xs leading-relaxed text-ink/70">Validation study multicentrico (n≈800). Endpoint primari: sensibilità ≥85%, specificità ≥80% vs gold standard.</p>
+      </div>
+      <div class="border-t-2 border-clay/30 pt-4">
+        <div class="font-mono text-[10px] tracking-wider text-clay uppercase mb-2">Fase 3 · 24+ mesi</div>
+        <div class="font-serif text-xl mb-2">CE & lancio</div>
+        <p class="text-xs leading-relaxed text-ink/70">Dossier MDR classe IIa (organismo notificato). ISO 13485, IEC 62304. Lancio EU prioritario.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== OPPORTUNITY ============== -->
+<section id="opportunity" class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 py-20">
+  <div class="grid lg:grid-cols-12 gap-10 border-t border-ink-soft pt-10">
+    <div class="lg:col-span-5">
+      <div class="font-mono text-[10px] tracking-[0.25em] uppercase text-clay mb-2">§04 · Opportunità di mercato</div>
+      <h2 class="font-serif text-4xl leading-tight mb-6">Lo screening<br><em>prima</em> della clinica.</h2>
+      <p class="text-sm leading-relaxed text-ink/80 mb-6">
+        L'occhio è l'unica struttura interna ispezionabile dall'esterno senza penetrazione. 
+        La fotocamera del telefono — già nelle tasche di 6 miliardi di persone — 
+        diventa hardware diagnostico latente.
+      </p>
+      <div class="space-y-3 text-sm">
+        <div class="flex gap-3"><span class="text-amber font-mono">→</span> <span>Telemedicina e medicina territoriale (post-COVID, AGENAS DM77)</span></div>
+        <div class="flex gap-3"><span class="text-amber font-mono">→</span> <span>Triage farmacie territoriali</span></div>
+        <div class="flex gap-3"><span class="text-amber font-mono">→</span> <span>Screening neonatale ittero (programmi WHO LMIC)</span></div>
+        <div class="flex gap-3"><span class="text-amber font-mono">→</span> <span>Wellness integrato in app sanitarie aziendali</span></div>
+      </div>
+    </div>
+
+    <div class="lg:col-span-7 grid grid-cols-2 gap-4">
+      <div class="border border-ink-soft p-6">
+        <div class="font-mono text-[10px] tracking-wider text-clay uppercase mb-3">TAM globale</div>
+        <div class="font-serif text-5xl leading-none mb-2">€8.4<span class="text-amber">B</span></div>
+        <div class="text-xs text-ink/70">Mercato globale screening point-of-care 2027 (MarketsandMarkets)</div>
+      </div>
+      <div class="border border-ink-soft p-6">
+        <div class="font-mono text-[10px] tracking-wider text-clay uppercase mb-3">Casi anemia EU</div>
+        <div class="font-serif text-5xl leading-none mb-2">~60<span class="text-amber">M</span></div>
+        <div class="text-xs text-ink/70">Donne in età fertile con anemia diagnosticata o sotto-diagnosticata (OMS Europa)</div>
+      </div>
+      <div class="border border-ink-soft p-6">
+        <div class="font-mono text-[10px] tracking-wider text-clay uppercase mb-3">Costi competitor</div>
+        <div class="font-serif text-5xl leading-none mb-2">€15<span class="text-amber">–40</span></div>
+        <div class="text-xs text-ink/70">Costo medio per test ematico bilirubina/Hb ambulatoriale. Iridis: <strong>marginale ≈ €0</strong>.</div>
+      </div>
+      <div class="border border-ink-soft p-6 bg-ink text-paper">
+        <div class="font-mono text-[10px] tracking-wider text-cream/60 uppercase mb-3">Cosa serve adesso</div>
+        <div class="font-serif text-2xl leading-tight mb-3">Round pre-seed<br>€650K · 18 mesi</div>
+        <div class="text-xs text-cream/80 leading-relaxed">Dataset clinico + 2 hire ML + partnership ospedaliere + dossier QMS iniziale.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FOOTER ============== -->
+<footer class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 py-10 border-t border-ink-soft">
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div class="font-mono text-[10px] tracking-wider text-clay uppercase">
+      Iridis · Clinical Screening · Prototype demonstration only · Not a medical device
+    </div>
+    <div class="font-mono text-[10px] tracking-wider text-clay">
+      Build POC-0.1.0 · <span id="build-date"></span>
+    </div>
+  </div>
+</footer>
+
+<!-- ============== APP LOGIC ============== -->
+<script>
+// =========================================================================
+// IRIDIS - clinical screening POC
+// All image processing runs locally, never leaves the browser.
+// =========================================================================
+
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const overlay = document.getElementById('overlay');
+const placeholder = document.getElementById('placeholder');
+const captureHint = document.getElementById('capture-hint');
+const hintText = document.getElementById('hint-text');
+const btnCam = document.getElementById('btn-cam');
+const btnSnap = document.getElementById('btn-snap');
+const btnUpload = document.getElementById('btn-upload');
+const btnReset = document.getElementById('btn-reset');
+const btnAnalyze = document.getElementById('btn-analyze');
+const fileInput = document.getElementById('file-input');
+const roiControls = document.getElementById('roi-controls');
+const roiStatus = document.getElementById('roi-status');
+
+let stream = null;
+let currentImage = null;
+let activeROI = null;
+const rois = { sclera: null, conjunctiva: null, pupil: null };
+let drawing = false;
+let startPt = null;
+
+document.getElementById('build-date').textContent = new Date().toISOString().slice(0,10);
+
+// ---------- Camera ----------
+btnCam.addEventListener('click', async () => {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ 
+      video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 960 } }, 
+      audio: false 
+    });
+    video.srcObject = stream;
+    video.classList.remove('hidden');
+    placeholder.classList.add('hidden');
+    btnSnap.classList.remove('hidden');
+    btnCam.textContent = 'Fotocamera attiva';
+    btnCam.disabled = true;
+    btnCam.classList.add('opacity-50');
+  } catch (e) {
+    alert('Impossibile accedere alla fotocamera: ' + e.message);
+  }
+});
+
+btnSnap.addEventListener('click', () => {
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.save();
+  ctx.scale(-1, 1);
+  ctx.drawImage(video, -canvas.width, 0);
+  ctx.restore();
+  finalizeCapture();
+});
+
+// ---------- Upload ----------
+btnUpload.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const img = new Image();
+  img.onload = () => {
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    canvas.getContext('2d').drawImage(img, 0, 0);
+    // uploaded images: no mirroring
+    canvas.style.transform = 'none';
+    overlay.style.transform = 'none';
+    finalizeCapture();
+  };
+  img.src = URL.createObjectURL(f);
+});
+
+function finalizeCapture() {
+  if (stream) {
+    stream.getTracks().forEach(t => t.stop());
+    video.classList.add('hidden');
+  }
+  placeholder.classList.add('hidden');
+  canvas.classList.remove('hidden');
+  overlay.classList.remove('hidden');
+  overlay.width = canvas.width;
+  overlay.height = canvas.height;
+  btnSnap.classList.add('hidden');
+  btnCam.classList.add('hidden');
+  btnReset.classList.remove('hidden');
+  captureHint.classList.remove('hidden');
+  roiControls.classList.remove('hidden');
+  currentImage = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
+  // size overlay to displayed size
+  syncOverlay();
+  window.addEventListener('resize', syncOverlay);
+}
+
+function syncOverlay() {
+  const rect = canvas.getBoundingClientRect();
+  overlay.style.width = rect.width + 'px';
+  overlay.style.height = rect.height + 'px';
+}
+
+// ---------- Reset ----------
+btnReset.addEventListener('click', () => {
+  if (stream) { stream.getTracks().forEach(t => t.stop()); }
+  video.classList.add('hidden');
+  canvas.classList.add('hidden');
+  overlay.classList.add('hidden');
+  canvas.style.transform = 'scaleX(-1)';
+  overlay.style.transform = 'scaleX(-1)';
+  placeholder.classList.remove('hidden');
+  btnSnap.classList.add('hidden');
+  btnCam.classList.remove('hidden');
+  btnCam.textContent = 'Avvia fotocamera';
+  btnCam.disabled = false;
+  btnCam.classList.remove('opacity-50');
+  btnReset.classList.add('hidden');
+  captureHint.classList.add('hidden');
+  roiControls.classList.add('hidden');
+  Object.keys(rois).forEach(k => rois[k] = null);
+  activeROI = null;
+  document.querySelectorAll('.roi-btn').forEach(b => b.classList.remove('active'));
+  updateRoiStatus();
+  resetReport();
+});
+
+// ---------- ROI selection ----------
+document.querySelectorAll('.roi-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.roi-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    activeROI = b.dataset.roi;
+    const labels = { sclera: 'Trascina sulla parte bianca dell\'occhio (sclera)', 
+                     conjunctiva: 'Trascina sulla congiuntiva (palpebra inferiore rovesciata o angolo interno)', 
+                     pupil: 'Trascina sulla pupilla (cerchio nero centrale)' };
+    hintText.textContent = labels[activeROI];
+  });
+});
+
+// Drag on overlay
+function getCanvasCoords(e) {
+  const rect = overlay.getBoundingClientRect();
+  const x = (e.clientX - rect.left) / rect.width * overlay.width;
+  const y = (e.clientY - rect.top) / rect.height * overlay.height;
+  // mirror x if overlay is mirrored
+  const mirrored = overlay.style.transform.includes('-1');
+  return { x: mirrored ? overlay.width - x : x, y };
+}
+
+overlay.style.pointerEvents = 'auto';
+overlay.addEventListener('mousedown', (e) => {
+  if (!activeROI || !currentImage) return;
+  drawing = true;
+  startPt = getCanvasCoords(e);
+});
+overlay.addEventListener('mousemove', (e) => {
+  if (!drawing) return;
+  const p = getCanvasCoords(e);
+  redrawROIs({ x1: startPt.x, y1: startPt.y, x2: p.x, y2: p.y, type: activeROI });
+});
+overlay.addEventListener('mouseup', (e) => {
+  if (!drawing) return;
+  drawing = false;
+  const p = getCanvasCoords(e);
+  const box = normalizeBox(startPt.x, startPt.y, p.x, p.y);
+  if (box.w > 8 && box.h > 8) {
+    rois[activeROI] = box;
+    updateRoiStatus();
+  }
+  redrawROIs();
+});
+// touch
+overlay.addEventListener('touchstart', (e) => {
+  if (!activeROI || !currentImage) return;
+  e.preventDefault();
+  const t = e.touches[0];
+  drawing = true;
+  startPt = getCanvasCoords(t);
+});
+overlay.addEventListener('touchmove', (e) => {
+  if (!drawing) return;
+  e.preventDefault();
+  const t = e.touches[0];
+  const p = getCanvasCoords(t);
+  redrawROIs({ x1: startPt.x, y1: startPt.y, x2: p.x, y2: p.y, type: activeROI });
+});
+overlay.addEventListener('touchend', (e) => {
+  if (!drawing) return;
+  drawing = false;
+  const t = e.changedTouches[0];
+  const p = getCanvasCoords(t);
+  const box = normalizeBox(startPt.x, startPt.y, p.x, p.y);
+  if (box.w > 8 && box.h > 8) {
+    rois[activeROI] = box;
+    updateRoiStatus();
+  }
+  redrawROIs();
+});
+
+function normalizeBox(x1, y1, x2, y2) {
+  return { 
+    x: Math.min(x1, x2), 
+    y: Math.min(y1, y2), 
+    w: Math.abs(x2 - x1), 
+    h: Math.abs(y2 - y1) 
+  };
+}
+
+function redrawROIs(preview) {
+  const ctx = overlay.getContext('2d');
+  ctx.clearRect(0, 0, overlay.width, overlay.height);
+  const colors = { sclera: '#c8841a', conjunctiva: '#a44a1a', pupil: '#1a1814' };
+  Object.entries(rois).forEach(([type, box]) => {
+    if (!box) return;
+    ctx.strokeStyle = colors[type];
+    ctx.lineWidth = 3;
+    ctx.strokeRect(box.x, box.y, box.w, box.h);
+    ctx.fillStyle = colors[type];
+    ctx.font = 'bold 16px Geist Mono, monospace';
+    // mirror text if mirrored
+    if (overlay.style.transform.includes('-1')) {
+      ctx.save();
+      ctx.translate(box.x + box.w + 4 + 100, box.y + 16);
+      ctx.scale(-1, 1);
+      ctx.fillText(type.toUpperCase(), 0, 0);
+      ctx.restore();
+    } else {
+      ctx.fillText(type.toUpperCase(), box.x + box.w + 4, box.y + 16);
+    }
+  });
+  if (preview) {
+    const box = normalizeBox(preview.x1, preview.y1, preview.x2, preview.y2);
+    ctx.strokeStyle = colors[preview.type] + 'aa';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 4]);
+    ctx.strokeRect(box.x, box.y, box.w, box.h);
+    ctx.setLineDash([]);
+  }
+}
+
+function updateRoiStatus() {
+  const n = Object.values(rois).filter(r => r).length;
+  roiStatus.textContent = `${n} / 3 regioni annotate`;
+  btnAnalyze.disabled = n < 1;
+}
+
+// ---------- Color space conversions ----------
+function rgbToLab(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  r = r > 0.04045 ? Math.pow((r + 0.055) / 1.055, 2.4) : r / 12.92;
+  g = g > 0.04045 ? Math.pow((g + 0.055) / 1.055, 2.4) : g / 12.92;
+  b = b > 0.04045 ? Math.pow((b + 0.055) / 1.055, 2.4) : b / 12.92;
+  let x = (r * 0.4124 + g * 0.3576 + b * 0.1805) / 0.95047;
+  let y = (r * 0.2126 + g * 0.7152 + b * 0.0722) / 1.00000;
+  let z = (r * 0.0193 + g * 0.1192 + b * 0.9505) / 1.08883;
+  x = x > 0.008856 ? Math.pow(x, 1/3) : 7.787 * x + 16/116;
+  y = y > 0.008856 ? Math.pow(y, 1/3) : 7.787 * y + 16/116;
+  z = z > 0.008856 ? Math.pow(z, 1/3) : 7.787 * z + 16/116;
+  return { L: 116 * y - 16, a: 500 * (x - y), b: 200 * (y - z) };
+}
+
+function rgbToHsv(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  const d = max - min;
+  let h = 0;
+  if (d !== 0) {
+    if (max === r) h = ((g - b) / d) % 6;
+    else if (max === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    h *= 60;
+    if (h < 0) h += 360;
+  }
+  return { h, s: max === 0 ? 0 : d / max, v: max };
+}
+
+function samplePixels(box) {
+  if (!box || !currentImage) return [];
+  const px = [];
+  const x0 = Math.max(0, Math.floor(box.x));
+  const y0 = Math.max(0, Math.floor(box.y));
+  const x1 = Math.min(currentImage.width, Math.floor(box.x + box.w));
+  const y1 = Math.min(currentImage.height, Math.floor(box.y + box.h));
+  const data = currentImage.data;
+  for (let y = y0; y < y1; y += 2) {
+    for (let x = x0; x < x1; x += 2) {
+      const i = (y * currentImage.width + x) * 4;
+      px.push({ r: data[i], g: data[i+1], b: data[i+2] });
+    }
+  }
+  return px;
+}
+
+// ---------- Analyses ----------
+function analyzeJaundice(box) {
+  const px = samplePixels(box);
+  if (!px.length) return null;
+  // filter very dark (lashes) and clipped highlights
+  const valid = px.map(p => ({ ...p, lab: rgbToLab(p.r, p.g, p.b) }))
+                  .filter(p => p.lab.L > 25 && p.lab.L < 92);
+  if (valid.length < 10) return null;
+  const meanB = valid.reduce((s, p) => s + p.lab.b, 0) / valid.length;
+  const meanL = valid.reduce((s, p) => s + p.lab.L, 0) / valid.length;
+  // Risk mapping
+  let verdict, level;
+  if (meanB < 5) { verdict = 'Sclera nei valori cromatici normali.'; level = 'normale'; }
+  else if (meanB < 12) { verdict = 'Lieve viraggio giallastro. Sotto soglia di rilevanza clinica, monitoraggio raccomandato.'; level = 'borderline'; }
+  else { verdict = 'Giallo sclerale marcato. Compatibile con iperbilirubinemia. Approfondimento ematochimico consigliato.'; level = 'alto'; }
+  return { value: meanB.toFixed(1), pct: Math.min(100, Math.max(0, (meanB / 25) * 100)), verdict, level, L: meanL.toFixed(0) };
+}
+
+function analyzeAnemia(box) {
+  const px = samplePixels(box);
+  if (!px.length) return null;
+  const valid = px.map(p => ({ ...p, lab: rgbToLab(p.r, p.g, p.b), hsv: rgbToHsv(p.r, p.g, p.b) }))
+                  .filter(p => p.lab.L > 20 && p.lab.L < 92);
+  if (valid.length < 10) return null;
+  const meanA = valid.reduce((s, p) => s + p.lab.a, 0) / valid.length;
+  const meanS = valid.reduce((s, p) => s + p.hsv.s, 0) / valid.length;
+  // pallor score: lower a* + lower saturation = paler
+  // roseo: a*≈25, s≈0.5 → score ≈ 100 ; pallor: a*≈5, s≈0.15 → score ≈ 17
+  const score = Math.max(0, Math.min(100, meanA * 2.5 + meanS * 60));
+  let verdict, level;
+  if (score < 35) { verdict = 'Pallore congiuntivale evidente. Compatibile con anemia. Consigliato emocromo.'; level = 'alto'; }
+  else if (score < 60) { verdict = 'Colorito congiuntivale ai limiti inferiori. Borderline.'; level = 'borderline'; }
+  else { verdict = 'Congiuntiva ben perfusa. Pallor index entro la norma.'; level = 'normale'; }
+  return { value: score.toFixed(0), pct: score, verdict, level };
+}
+
+function analyzeCataract(box) {
+  const px = samplePixels(box);
+  if (!px.length) return null;
+  const vs = px.map(p => rgbToHsv(p.r, p.g, p.b).v);
+  const meanV = vs.reduce((s, v) => s + v, 0) / vs.length;
+  const variance = Math.sqrt(vs.reduce((s, v) => s + (v - meanV) ** 2, 0) / vs.length);
+  // Healthy pupil: dark and uniform → low meanV, low variance
+  // Cataract: bright + heterogeneous
+  const opacity = Math.min(100, (meanV * 70 + variance * 200));
+  let verdict, level;
+  if (opacity < 20) { verdict = 'Pupilla scura e omogenea. Nessun segno di opacità cristalliniana.'; level = 'normale'; }
+  else if (opacity < 45) { verdict = 'Leggera luminosità pupillare. Possibili riflessi da illuminazione o opacità iniziale.'; level = 'borderline'; }
+  else { verdict = 'Pupilla con riflessi biancastri marcati. Compatibile con opacità cristalliniana. Visita oculistica consigliata.'; level = 'alto'; }
+  return { value: opacity.toFixed(0), pct: opacity, verdict, level };
+}
+
+// ---------- Render report ----------
+function renderResult(key, res) {
+  const valueEl = document.querySelector(`[data-value="${key}"]`);
+  const meterEl = document.querySelector(`[data-meter="${key}"]`);
+  const verdictEl = document.querySelector(`[data-verdict="${key}"]`);
+  if (!res) {
+    valueEl.textContent = 'n/d';
+    meterEl.style.width = '0%';
+    verdictEl.innerHTML = '<span class="text-clay italic">ROI non annotata o dati insufficienti.</span>';
+    return;
+  }
+  valueEl.textContent = res.value;
+  meterEl.style.width = res.pct + '%';
+  const colors = { normale: 'text-moss', borderline: 'text-amber', alto: 'text-ember' };
+  const labels = { normale: '● Normale', borderline: '● Borderline', alto: '● Attenzione' };
+  verdictEl.innerHTML = `<div class="${colors[res.level]} font-medium text-xs font-mono uppercase tracking-wider mb-1">${labels[res.level]}</div><div class="text-ink/80">${res.verdict}</div>`;
+}
+
+function resetReport() {
+  ['jaundice', 'anemia', 'cataract'].forEach(k => {
+    document.querySelector(`[data-value="${k}"]`).textContent = '—';
+    document.querySelector(`[data-meter="${k}"]`).style.width = '0%';
+    document.querySelector(`[data-verdict="${k}"]`).innerHTML = '<span class="text-clay">In attesa di analisi…</span>';
+  });
+  document.getElementById('report-ts').textContent = '—';
+}
+
+btnAnalyze.addEventListener('click', () => {
+  const j = analyzeJaundice(rois.sclera);
+  const a = analyzeAnemia(rois.conjunctiva);
+  const c = analyzeCataract(rois.pupil);
+  renderResult('jaundice', j);
+  renderResult('anemia', a);
+  renderResult('cataract', c);
+  document.getElementById('report-ts').textContent = new Date().toLocaleTimeString('it-IT');
+});
+
+</script>
+</body>
+</html>

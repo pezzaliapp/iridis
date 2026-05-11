@@ -1,0 +1,94 @@
+# ============================================================
+# Iridis · .gitignore
+# Importante: include esclusioni per dati biometrici sensibili.
+# Mai committare immagini reali di occhi o pazienti nel repo.
+# ============================================================
+
+# -- OS --
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# -- Editor / IDE --
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# -- Node (futura migrazione a Next.js) --
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm
+.yarn-integrity
+dist/
+build/
+.next/
+out/
+
+# -- Python (futuri notebook ML) --
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+*.egg
+.venv/
+venv/
+env/
+ENV/
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# -- Environment & secrets --
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+*.pem
+*.key
+secrets/
+
+# -- Build artifacts --
+*.log
+*.tmp
+coverage/
+.nyc_output/
+
+# ============================================================
+# DATI SENSIBILI — non rimuovere mai queste righe
+# Le immagini oculari sono dati biometrici ex art. 9 GDPR.
+# Anche durante sviluppo, non versionare nulla di reale.
+# ============================================================
+data/raw/
+data/processed/
+data/private/
+*.dicom
+*.dcm
+patient-images/
+*-patient-*
+*-clinical-*
+training-set/
+
+# -- Modelli ML allenati (troppo grandi + spesso contengono fingerprinting del dataset) --
+*.onnx
+*.pth
+*.pt
+*.h5
+*.tflite
+*.pb
+models/checkpoints/
