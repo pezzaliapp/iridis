@@ -50,7 +50,7 @@ tailwind.config = {
     border: none;
     border-top: 1px dashed rgba(26,24,20,0.25);
   }
-  #video, #canvas, #overlay {
+  #video {
     transform: scaleX(-1);
   }
   .roi-btn.active {
@@ -179,6 +179,7 @@ tailwind.config = {
             <span id="hint-text">Trascina sull'immagine per selezionare la regione d'interesse.</span>
           </div>
         </div>
+        <div id="drag-pulse" class="absolute hidden w-3 h-3 rounded-full pointer-events-none z-20 pulse-dot"></div>
       </div>
 
       <!-- Controls -->
@@ -559,9 +560,6 @@ fileInput.addEventListener('change', (e) => {
     canvas.width = img.naturalWidth;
     canvas.height = img.naturalHeight;
     canvas.getContext('2d').drawImage(img, 0, 0);
-    // uploaded images: no mirroring
-    canvas.style.transform = 'none';
-    overlay.style.transform = 'none';
     finalizeCapture();
   };
   img.src = URL.createObjectURL(f);
@@ -600,8 +598,6 @@ btnReset.addEventListener('click', () => {
   video.classList.add('hidden');
   canvas.classList.add('hidden');
   overlay.classList.add('hidden');
-  canvas.style.transform = 'scaleX(-1)';
-  overlay.style.transform = 'scaleX(-1)';
   placeholder.classList.remove('hidden');
   btnSnap.classList.add('hidden');
   btnCam.classList.remove('hidden');
@@ -611,6 +607,7 @@ btnReset.addEventListener('click', () => {
   btnReset.classList.add('hidden');
   captureHint.classList.add('hidden');
   roiControls.classList.add('hidden');
+  hideDragPulse();
   Object.keys(rois).forEach(k => rois[k] = null);
   activeROI = null;
   document.querySelectorAll('.roi-btn').forEach(b => b.classList.remove('active'));
@@ -631,14 +628,39 @@ document.querySelectorAll('.roi-btn').forEach(b => {
   });
 });
 
-// Drag on overlay
+// Drag on overlay — overlay e canvas non sono più specchiati, quindi
+// le coordinate del mouse mappano direttamente al buffer.
 function getCanvasCoords(e) {
   const rect = overlay.getBoundingClientRect();
-  const x = (e.clientX - rect.left) / rect.width * overlay.width;
-  const y = (e.clientY - rect.top) / rect.height * overlay.height;
-  // mirror x if overlay is mirrored
-  const mirrored = overlay.style.transform.includes('-1');
-  return { x: mirrored ? overlay.width - x : x, y };
+  return {
+    x: (e.clientX - rect.left) / rect.width * overlay.width,
+    y: (e.clientY - rect.top) / rect.height * overlay.height
+  };
+}
+
+// Pulse dot di feedback durante il drag (DOM element, animato via CSS).
+const dragPulse = document.getElementById('drag-pulse');
+const captureFrame = document.getElementById('capture-frame');
+const roiColors = { sclera: '#c8841a', conjunctiva: '#a44a1a', pupil: '#1a1814' };
+
+function updateDragPulse(bufferX, bufferY) {
+  if (!activeROI) return;
+  const oRect = overlay.getBoundingClientRect();
+  const fRect = captureFrame.getBoundingClientRect();
+  const cssX = (bufferX / overlay.width) * oRect.width + (oRect.left - fRect.left);
+  const cssY = (bufferY / overlay.height) * oRect.height + (oRect.top - fRect.top);
+  dragPulse.style.left = (cssX - 6) + 'px';
+  dragPulse.style.top = (cssY - 6) + 'px';
+  dragPulse.style.background = roiColors[activeROI];
+}
+
+function showDragPulse(bufferX, bufferY) {
+  updateDragPulse(bufferX, bufferY);
+  dragPulse.classList.remove('hidden');
+}
+
+function hideDragPulse() {
+  dragPulse.classList.add('hidden');
 }
 
 overlay.style.pointerEvents = 'auto';
@@ -646,15 +668,18 @@ overlay.addEventListener('mousedown', (e) => {
   if (!activeROI || !currentImage) return;
   drawing = true;
   startPt = getCanvasCoords(e);
+  showDragPulse(startPt.x, startPt.y);
 });
 overlay.addEventListener('mousemove', (e) => {
   if (!drawing) return;
   const p = getCanvasCoords(e);
+  updateDragPulse(p.x, p.y);
   redrawROIs({ x1: startPt.x, y1: startPt.y, x2: p.x, y2: p.y, type: activeROI });
 });
 overlay.addEventListener('mouseup', (e) => {
   if (!drawing) return;
   drawing = false;
+  hideDragPulse();
   const p = getCanvasCoords(e);
   const box = normalizeBox(startPt.x, startPt.y, p.x, p.y);
   if (box.w > 8 && box.h > 8) {
@@ -670,17 +695,20 @@ overlay.addEventListener('touchstart', (e) => {
   const t = e.touches[0];
   drawing = true;
   startPt = getCanvasCoords(t);
+  showDragPulse(startPt.x, startPt.y);
 });
 overlay.addEventListener('touchmove', (e) => {
   if (!drawing) return;
   e.preventDefault();
   const t = e.touches[0];
   const p = getCanvasCoords(t);
+  updateDragPulse(p.x, p.y);
   redrawROIs({ x1: startPt.x, y1: startPt.y, x2: p.x, y2: p.y, type: activeROI });
 });
 overlay.addEventListener('touchend', (e) => {
   if (!drawing) return;
   drawing = false;
+  hideDragPulse();
   const t = e.changedTouches[0];
   const p = getCanvasCoords(t);
   const box = normalizeBox(startPt.x, startPt.y, p.x, p.y);
@@ -703,28 +731,18 @@ function normalizeBox(x1, y1, x2, y2) {
 function redrawROIs(preview) {
   const ctx = overlay.getContext('2d');
   ctx.clearRect(0, 0, overlay.width, overlay.height);
-  const colors = { sclera: '#c8841a', conjunctiva: '#a44a1a', pupil: '#1a1814' };
   Object.entries(rois).forEach(([type, box]) => {
     if (!box) return;
-    ctx.strokeStyle = colors[type];
+    ctx.strokeStyle = roiColors[type];
     ctx.lineWidth = 3;
     ctx.strokeRect(box.x, box.y, box.w, box.h);
-    ctx.fillStyle = colors[type];
+    ctx.fillStyle = roiColors[type];
     ctx.font = 'bold 16px Geist Mono, monospace';
-    // mirror text if mirrored
-    if (overlay.style.transform.includes('-1')) {
-      ctx.save();
-      ctx.translate(box.x + box.w + 4 + 100, box.y + 16);
-      ctx.scale(-1, 1);
-      ctx.fillText(type.toUpperCase(), 0, 0);
-      ctx.restore();
-    } else {
-      ctx.fillText(type.toUpperCase(), box.x + box.w + 4, box.y + 16);
-    }
+    ctx.fillText(type.toUpperCase(), box.x + box.w + 4, box.y + 16);
   });
   if (preview) {
     const box = normalizeBox(preview.x1, preview.y1, preview.x2, preview.y2);
-    ctx.strokeStyle = colors[preview.type] + 'aa';
+    ctx.strokeStyle = roiColors[preview.type] + 'aa';
     ctx.lineWidth = 2;
     ctx.setLineDash([6, 4]);
     ctx.strokeRect(box.x, box.y, box.w, box.h);
