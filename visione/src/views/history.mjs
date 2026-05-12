@@ -1,5 +1,6 @@
 import { store } from '../store.mjs';
 import { exportMonitoringReport } from '../pdf.mjs';
+import { exportReminderIcs } from '../ics.mjs';
 
 const DISCLAIMER = 'Questo strumento non sostituisce la visita oculistica e non è un dispositivo medico.';
 
@@ -24,6 +25,73 @@ function escapeHtml(str) {
     .replaceAll('>', '&gt;');
 }
 
+function dangerZoneHtml() {
+  return `
+    <section class="danger-zone">
+      <h2>Cancellazione dati</h2>
+      <p>Puoi cancellare tutti i dati salvati sul tuo dispositivo (sessioni, calibrazione, impostazioni). L'operazione non è reversibile.</p>
+      <button type="button" class="warn-btn" id="clear-btn">Cancella tutti i miei dati</button>
+    </section>
+    <dialog id="clear-dialog" class="confirm-dialog" aria-labelledby="clear-dialog-title">
+      <h2 id="clear-dialog-title">Cancellare tutti i dati?</h2>
+      <p>Questa azione rimuoverà definitivamente tutte le sessioni di test salvate sul tuo dispositivo, insieme alla calibrazione e alle impostazioni di frequenza.</p>
+      <p>La prossima volta che userai l'app dovrai rifare onboarding e calibrazione.</p>
+      <p>L'operazione non può essere annullata.</p>
+      <div class="dialog-actions">
+        <button type="button" class="secondary-btn" id="cancel-clear">Annulla</button>
+        <button type="button" class="warn-btn" id="confirm-clear">Cancella tutto</button>
+      </div>
+    </dialog>
+  `;
+}
+
+function wireClearHandlers(container) {
+  const dialog = container.querySelector('#clear-dialog');
+  const clearBtn = container.querySelector('#clear-btn');
+  const cancelBtn = container.querySelector('#cancel-clear');
+  const confirmBtn = container.querySelector('#confirm-clear');
+
+  clearBtn.addEventListener('click', () => dialog.showModal());
+  cancelBtn.addEventListener('click', () => dialog.close());
+
+  confirmBtn.addEventListener('click', async () => {
+    const originalLabel = confirmBtn.textContent;
+    confirmBtn.disabled = true;
+    cancelBtn.disabled = true;
+    confirmBtn.textContent = 'Cancellazione in corso…';
+    try {
+      const handle = await store.open();
+      await handle.clearAll();
+      dialog.close();
+      location.hash = '#/';
+    } catch (err) {
+      console.error('[Iridis Visione] clearAll fallito', err);
+      confirmBtn.textContent = originalLabel;
+      confirmBtn.disabled = false;
+      cancelBtn.disabled = false;
+      window.alert('Cancellazione fallita. Riprova.');
+    }
+  });
+}
+
+function wireExportButton(btn, exportFn, label) {
+  if (!btn) return;
+  const originalLabel = btn.textContent;
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    btn.textContent = 'Generazione in corso…';
+    try {
+      await exportFn();
+    } catch (err) {
+      console.error(`[Iridis Visione] export ${label} fallito`, err);
+      window.alert(`Impossibile generare ${label}. Riprova o ricarica la pagina.`);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+    }
+  });
+}
+
 export async function renderHistory(container) {
   const handle = await store.open();
   const sessions = await handle.getSessions();
@@ -34,10 +102,12 @@ export async function renderHistory(container) {
       <p class="disclaimer-band">${DISCLAIMER}</p>
       <p>Non hai ancora completato un test. La cronologia mostrerà qui le tue sessioni passate. Le potrai esportare in PDF da portare al tuo oculista.</p>
       <button type="button" class="cta" id="start-btn">Inizia un test</button>
+      ${dangerZoneHtml()}
     `;
     container.querySelector('#start-btn').addEventListener('click', () => {
       location.hash = '#/test';
     });
+    wireClearHandlers(container);
     return;
   }
 
@@ -57,28 +127,18 @@ export async function renderHistory(container) {
     <h1>Cronologia</h1>
     <p class="disclaimer-band">${DISCLAIMER}</p>
     <div class="cronologia-actions">
-      <button type="button" class="cta" id="export-btn">Esporta report di monitoraggio</button>
+      <button type="button" class="cta" id="export-pdf-btn">Esporta report di monitoraggio</button>
+      <button type="button" class="secondary-btn" id="export-ics-btn">Esporta promemoria nel calendario</button>
     </div>
     <div class="session-list">
       ${cards}
     </div>
+    ${dangerZoneHtml()}
   `;
 
-  const exportBtn = container.querySelector('#export-btn');
-  const originalLabel = exportBtn.textContent;
-  exportBtn.addEventListener('click', async () => {
-    exportBtn.disabled = true;
-    exportBtn.textContent = 'Generazione in corso…';
-    try {
-      await exportMonitoringReport();
-    } catch (err) {
-      console.error('[Iridis Visione] export PDF fallito', err);
-      window.alert('Impossibile generare il PDF. Riprova o ricarica la pagina.');
-    } finally {
-      exportBtn.disabled = false;
-      exportBtn.textContent = originalLabel;
-    }
-  });
+  wireExportButton(container.querySelector('#export-pdf-btn'), exportMonitoringReport, 'il PDF');
+  wireExportButton(container.querySelector('#export-ics-btn'), exportReminderIcs, 'il promemoria');
+  wireClearHandlers(container);
 }
 
 export async function renderHistoryDetail(container, id) {
