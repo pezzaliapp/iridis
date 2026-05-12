@@ -67,6 +67,23 @@ Lista esplicita in `research.md §5.5`. Esempi rappresentativi che porterebbero 
 
 Prima di aggiungere qualsiasi feature che tocchi uno di questi punti: **stop e rileggere `research.md §5.5`**.
 
+### 1.5 Integrazione con Iridis principale (risolta 2026-05-12)
+Visione è referenziata da Iridis principale dal commit `51ce6ec`:
+- Voce "Visione" nel nav principale di `/iridis/`
+- Blocchetto informativo prima del footer (3 frasi + CTA "Apri Iridis Visione →"),
+  descrive cosa fa Visione e cosa non è (non dispositivo medico ai sensi del
+  Regolamento (UE) 2017/745)
+- Wordmark "IRIDIS" cliccabile in `/iridis/visione/` (pattern brand=home,
+  section=current — Apple/Stripe)
+- Path relativi (`visione/` e `../`) per funzionamento sia in dev che in produzione
+
+**Estetiche distinte preservate**: Iridis principale resta editoriale (Instrument Serif,
+paper + ambra), Visione resta clinico-sobria (system-font, palette neutra).
+La distinzione di tono fra i due pubblici è essa stessa informazione utile
+(audience investor-editoriale vs audience paziente-clinico).
+
+Razionale completo della scelta di posizionamento: `roadmap-visione.md §5.4`.
+
 ---
 
 ## 2 · Architettura tecnica

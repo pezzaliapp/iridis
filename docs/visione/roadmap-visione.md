@@ -183,15 +183,21 @@ Decisione concorde di sessione: **NON ora**. Da rivalutare se:
 Se si decide di andare in MDR: ritornare su `research.md §5.5` per la lista delle feature
 che cambiano qualifica e ricostruire il piano.
 
-### 5.4 Integrazione architetturale Iridis ↔ Visione
-Decisione di product strategy **deferita**. Iridis principale (`/iridis`) ha estetica
-editoriale (Instrument Serif, paper + ambra), Visione ha estetica clinico-sobria
-(system-font, neutro). Da risolvere in sessione dedicata con tre opzioni:
+### 5.4 Integrazione architetturale Iridis ↔ Visione — RISOLTA 2026-05-12
 
-- **Sezione integrata di Iridis**: richiede restyling di Visione per allineare le due estetiche
-- **Prodotto figlio dichiarato**: mantiene la distinzione di tono fra i due pubblici
-  (Iridis = pitch editoriale, Visione = strumento clinico-sobrio per paziente AMD)
-- **Esperimento parallelo**: zero link cross-prodotto (status attuale di default)
+**Stato**: risolta. Scelta l'opzione **"Prodotto figlio dichiarato"** fra le tre
+allora sul tavolo (sezione integrata con restyling / prodotto figlio / esperimento
+parallelo): mantiene la distinzione di tono fra i due pubblici (Iridis investor-editoriale
+vs Visione paziente-clinico).
 
-Non risolvibile prematuramente: tocca scope, copy, e posizionamento regolatorio
-(se Visione "appartiene" a Iridis ne eredita o no le claim?).
+**Soluzione implementata** (commit `51ce6ec`):
+- Iridis principale (`/iridis/index.html`): voce "Visione" nel nav + blocchetto
+  informativo compatto prima del footer (3 frasi + CTA "Apri Iridis Visione →")
+- Iridis Visione (`/iridis/visione/index.html`): parola "IRIDIS" del wordmark
+  cliccabile (pattern brand=home, section=current)
+- Path relativi (`visione/` e `../`) per coerenza dev + produzione
+- Estetiche distinte preservate: Iridis resta Instrument Serif/paper-ambra, Visione
+  resta system-font/neutro. Nessun restyling.
+
+La distinzione di tono fra i due moduli è essa stessa informazione regolatoriamente
+utile (segnala due target diversi, due intenti diversi).
