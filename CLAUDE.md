@@ -21,7 +21,7 @@ Stadio attuale: **POC v0.1** — euristiche colorimetriche trasparenti, eseguite
 
 Funzionalmente completo end-to-end — onboarding con disclaimer integrato, calibrazione one-shot via carta ISO 7810, test interattivo monoculare dx→sx con annotazione tap/drag, salvataggio sessioni in IndexedDB, cronologia con dettaglio sessione, PDF report di monitoraggio (4 sezioni: sommario / cronologia compatta / sessioni con segnalazioni / fonti scientifiche), export .ics per promemoria calendario, cancellazione dati GDPR art.17. NON validato clinicamente, NON dispositivo medico ai sensi MDR 2017/745. Da testare con utente reale prima di qualsiasi divulgazione pubblica.
 
-Integrata in Iridis principale (`/iridis/`) dal 2026-05-12: voce "Visione" nel nav, blocchetto informativo prima del footer, wordmark "IRIDIS" cliccabile da `/iridis/visione/` (pattern brand=home).
+Integrata in Iridis principale (`/iridis/`) dal 2026-05-12: voce "Visione" nel nav, blocchetto informativo prima del footer, wordmark "IRIDIS" cliccabile da `/iridis/visione/` (pattern brand=home). Estetica allineata alla famiglia Iridis (background paper, logo SVG cerchio target condiviso, footer mono coerente) mantenendo system-font e palette neutra — Instrument Serif esplicitamente esclusa per leggibilità target 80+.
 
 Riferimenti: `docs/visione/research.md` (razionale clinico), `docs/visione/decisions.md` (scelte di prodotto e implementative), `docs/visione/roadmap-visione.md` (lavori futuri).
 

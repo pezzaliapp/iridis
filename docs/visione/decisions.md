@@ -84,6 +84,34 @@ La distinzione di tono fra i due pubblici è essa stessa informazione utile
 
 Razionale completo della scelta di posizionamento: `roadmap-visione.md §5.4`.
 
+### 1.6 Estetica famiglia visiva Iridis ↔ Visione (risolta 2026-05-12)
+Allineamento visivo successivo all'integrazione strutturale (§1.5). Tre interventi minimi
+su Visione, **zero modifiche** a Iridis principale:
+
+- **Background paper-tone** `#f5f1e8`: token `--bg` aggiornato da bianco puro al
+  paper di Iridis principale. Tutti i token semantici (fg, fg-muted, fg-dim, warn-bg)
+  invariati. Contrasti AAA preservati su paper (fg ~18:1, fg-dim ~8:1, fg-muted ~7.7:1)
+- **Logo SVG cerchio target condiviso**: stesso SVG di Iridis principale (3 cerchi,
+  ink #1a1814 + ambra #c8841a) nel wordmark di Visione, scalato 20px per proporzione
+  col testo monospace 14px. Wrappato nello stesso `<a>` della parola "IRIDIS" (singolo
+  click area), `aria-hidden` sul logo per non rumoreggiare gli screen reader
+- **Footer monospace coerente**: nuovo `.page-footer` su tutte le route di Visione,
+  font-mono 11px, color `--fg-dim`, border-top sottile, contenuto:
+  *"Iridis Visione · Self-monitoring AMD · Non è un dispositivo medico · POC v0.2.0"*
+
+**Vincolo critico rispettato**: la griglia di Amsler nel canvas resta **bianca pura**
+(`grid.mjs` invariato, `ctx.fillStyle = '#ffffff'` sovrascrive il CSS background). Il
+contrasto clinico massimo per pazienti con AMD è preservato. Effetto visivo collaterale:
+la griglia appare come "foglio di carta clinica appoggiato sulla pagina paper" — coerente
+con la metafora storica della griglia stampata.
+
+**Instrument Serif esplicitamente esclusa** da Visione: vincolo clinico-sobrio
+(stella polare §0) + leggibilità per target 80+ con maculopatia. Visione usa
+system-font ovunque, mai Instrument Serif neppure per titoli. La famiglia visiva
+si basa solo su background, logo, footer mono — NON sulla tipografia editoriale.
+
+Implementata in commit `10a7c04`.
+
 ---
 
 ## 2 · Architettura tecnica
@@ -162,16 +190,17 @@ await (await iv.open()).clearAll()
 
 ## 3 · UX per anziani
 
-### 3.1 Palette neutra strict
-Solo bianco / nero / grigi. Token CSS in `styles.css`:
-- `--bg: #ffffff`
-- `--fg: #111111` (contrasto ≈ 18.9:1, AAA)
-- `--fg-muted: #555555` (contrasto ≈ 8.5:1, AAA)
-- `--fg-dim: #525252` (wordmark)
+### 3.1 Palette neutra strict (con background paper post-2026-05-12)
+Solo neutri (paper / nero / grigi). Token CSS in `styles.css`:
+- `--bg: #f5f1e8` (paper Iridis-family, dal 2026-05-12 — vedi §1.6. Era `#ffffff` fino a commit `10a7c04`)
+- `--fg: #111111` (contrasto su paper ≈ 18:1, AAA)
+- `--fg-muted: #555555` (contrasto su paper ≈ 7.7:1, AAA)
+- `--fg-dim: #525252` (wordmark, footer)
 - `--border: #cccccc`
 - `--cta-bg: #111111`, `--cta-fg: #ffffff`
 
-Niente accent color brand. Niente sfumature.
+Niente accent color brand. Niente sfumature. La griglia di Amsler (canvas) resta
+bianca pura sovrascrivendo il bg via JS — vincolo B.3.
 
 ### 3.2 Eccezione semantic-color: warning critico
 `--warn-bg: #fef3c7` (giallo paglierino).
