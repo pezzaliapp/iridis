@@ -1,4 +1,6 @@
 import { renderOnboarding } from './views/onboarding.mjs';
+import { renderCalibration } from './views/calibration.mjs';
+import { renderTest } from './views/test.mjs';
 
 const root = document.getElementById('root');
 
@@ -13,10 +15,10 @@ function render() {
       renderOnboarding(root);
       break;
     case '#/calibrazione':
-      placeholder('calibrazione');
+      renderCalibration(root);
       break;
     case '#/test':
-      placeholder('test');
+      renderTest(root);
       break;
     case '#/cronologia':
       placeholder('cronologia');

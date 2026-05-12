@@ -56,7 +56,7 @@ h2 {
 }
 
 p { margin: 0 0 16px; }
-ul { margin: 0 0 16px; padding-left: 24px; }
+ul, ol { margin: 0 0 16px; padding-left: 24px; }
 li { margin-bottom: 8px; }
 
 a {
@@ -165,4 +165,75 @@ a:focus-visible {
 .cta:focus-visible {
   outline: 3px solid var(--fg);
   outline-offset: 3px;
+}
+
+.calibration-hint {
+  font-size: 18px;
+  color: var(--fg-muted);
+  margin: 16px 0 12px;
+}
+
+.calibration-stage {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0;
+  overflow-x: auto;
+}
+
+.calibration-rect {
+  border: 3px solid var(--fg);
+  background: transparent;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.calibration-controls {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin: 24px 0 16px;
+}
+
+.step-btn {
+  min-width: 80px;
+  min-height: 80px;
+  font-size: 36px;
+  font-weight: 700;
+  background: var(--bg);
+  color: var(--fg);
+  border: 2px solid var(--fg);
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  line-height: 1;
+}
+
+.step-btn:disabled {
+  color: var(--cta-disabled-fg);
+  border-color: var(--border);
+  cursor: not-allowed;
+}
+
+.step-btn:focus-visible {
+  outline: 3px solid var(--fg);
+  outline-offset: 3px;
+}
+
+.test-preamble {
+  font-size: 18px;
+  color: var(--fg-muted);
+  margin: 0 0 24px;
+}
+
+.grid-stage {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0;
+  overflow-x: auto;
+}
+
+#amsler-grid {
+  display: block;
+  background: var(--bg);
+  flex-shrink: 0;
 }
