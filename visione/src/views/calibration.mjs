@@ -10,8 +10,8 @@ const MIN_WIDTH = 250;
 const MAX_WIDTH = 600;
 const STEP = 2;
 
-export function renderCalibration(container) {
-  if (loadCalibration()) {
+export async function renderCalibration(container) {
+  if (await loadCalibration()) {
     location.hash = '#/test';
     return;
   }
@@ -68,8 +68,8 @@ export function renderCalibration(container) {
     applyWidth();
   });
 
-  confirmBtn.addEventListener('click', () => {
-    saveCalibration(pixelsPerMmFromCardWidth(width));
+  confirmBtn.addEventListener('click', async () => {
+    await saveCalibration(pixelsPerMmFromCardWidth(width));
     location.hash = '#/test';
   });
 

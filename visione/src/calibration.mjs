@@ -1,4 +1,4 @@
-const CALIBRATION_KEY = 'iridis-visione/calibration';
+import { store } from './store.mjs';
 
 const CARD_WIDTH_MM = 85.60;
 const CARD_HEIGHT_MM = 53.98;
@@ -13,26 +13,24 @@ export function cardWidthFromPixelsPerMm(pixelsPerMm) {
   return pixelsPerMm * CARD_WIDTH_MM;
 }
 
-export function loadCalibration() {
-  try {
-    const raw = localStorage.getItem(CALIBRATION_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (parsed && typeof parsed.pixelsPerMm === 'number' && parsed.pixelsPerMm > 0) {
-      return parsed;
-    }
-  } catch (_) {
-    // entry corrotta: torniamo a null
-  }
-  return null;
+export async function loadCalibration() {
+  const handle = await store.open();
+  const value = await handle.getCalibration();
+  return value ?? null;
 }
 
-export function saveCalibration(pixelsPerMm) {
+export async function saveCalibration(pixelsPerMm) {
   const payload = {
     pixelsPerMm,
     calibratedAt: new Date().toISOString(),
-    version: 1
+    version: 1,
+    devicePixelRatio: window.devicePixelRatio || 1,
+    viewportSizeAtCalibration: {
+      width: window.innerWidth,
+      height: window.innerHeight
+    }
   };
-  localStorage.setItem(CALIBRATION_KEY, JSON.stringify(payload));
+  const handle = await store.open();
+  await handle.setCalibration(payload);
   return payload;
 }

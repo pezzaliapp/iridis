@@ -1,4 +1,4 @@
-const FREQ_KEY = 'iridis-visione/frequency';
+import { store } from '../store.mjs';
 
 const CUSTOM_PRESETS = [
   { id: 'twice-weekly', label: '2 volte alla settimana' },
@@ -6,26 +6,26 @@ const CUSTOM_PRESETS = [
   { id: 'every-2-days', label: 'Ogni 2 giorni' }
 ];
 
-function loadFrequency() {
+async function loadFrequency() {
   try {
-    const raw = localStorage.getItem(FREQ_KEY);
-    if (!raw) return { mode: 'daily', preset: null };
-    const parsed = JSON.parse(raw);
-    if (parsed && ['daily', 'weekly', 'custom'].includes(parsed.mode)) {
-      return { mode: parsed.mode, preset: parsed.preset ?? null };
+    const handle = await store.open();
+    const stored = await handle.getFrequency();
+    if (stored && ['daily', 'weekly', 'custom'].includes(stored.mode)) {
+      return { mode: stored.mode, preset: stored.preset ?? null };
     }
   } catch (_) {
-    // entry corrotta: usiamo il default
+    // se IDB non è disponibile o legge male, usiamo il default
   }
   return { mode: 'daily', preset: null };
 }
 
-function saveFrequency(state) {
-  localStorage.setItem(FREQ_KEY, JSON.stringify(state));
+async function saveFrequency(state) {
+  const handle = await store.open();
+  await handle.setFrequency(state);
 }
 
-export function renderOnboarding(container) {
-  const state = loadFrequency();
+export async function renderOnboarding(container) {
+  const state = await loadFrequency();
 
   container.innerHTML = `
     <h1>Iridis Visione</h1>
@@ -134,8 +134,8 @@ export function renderOnboarding(container) {
     input.addEventListener('change', updateUi);
   });
 
-  ctaBtn.addEventListener('click', () => {
-    saveFrequency(currentState());
+  ctaBtn.addEventListener('click', async () => {
+    await saveFrequency(currentState());
     location.hash = '#/calibrazione';
   });
 

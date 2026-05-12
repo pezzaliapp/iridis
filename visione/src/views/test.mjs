@@ -1,8 +1,8 @@
 import { loadCalibration } from '../calibration.mjs';
 import { renderAmslerGrid } from '../grid.mjs';
 
-export function renderTest(container) {
-  const calibration = loadCalibration();
+export async function renderTest(container) {
+  const calibration = await loadCalibration();
   if (!calibration) {
     location.hash = '#/calibrazione';
     return;
