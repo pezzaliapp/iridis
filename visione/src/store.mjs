@@ -60,7 +60,23 @@ const handle = {
   setFrequency: (value) => txMeta('readwrite', s => s.put(value, 'frequency')),
 
   addSession: (record) => txSessions('readwrite', s => s.add(record)),
-  getSessions: () => txSessions('readonly', s => s.getAll()),
+  getSession: (id) => txSessions('readonly', s => s.get(id)),
+  getSessions: () => openDb().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction('sessions', 'readonly');
+    const objStore = tx.objectStore('sessions');
+    const results = [];
+    const req = objStore.openCursor();
+    req.onsuccess = (e) => {
+      const cursor = e.target.result;
+      if (cursor) {
+        results.push({ id: cursor.primaryKey, ...cursor.value });
+        cursor.continue();
+      } else {
+        resolve(results);
+      }
+    };
+    req.onerror = () => reject(req.error);
+  })),
 
   clearAll: async () => {
     await Promise.all([

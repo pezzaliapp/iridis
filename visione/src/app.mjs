@@ -1,6 +1,7 @@
 import { renderOnboarding } from './views/onboarding.mjs';
 import { renderCalibration } from './views/calibration.mjs';
 import { renderTest } from './views/test.mjs';
+import { renderHistory, renderHistoryDetail } from './views/history.mjs';
 import { store } from './store.mjs';
 
 // Esposto per ispezione manuale da DevTools Console (prototipo).
@@ -15,21 +16,24 @@ function placeholder(name) {
 
 async function render() {
   const hash = location.hash || '#/';
-  switch (hash) {
-    case '#/':
-      await renderOnboarding(root);
-      break;
-    case '#/calibrazione':
-      await renderCalibration(root);
-      break;
-    case '#/test':
-      await renderTest(root);
-      break;
-    case '#/cronologia':
-      root.innerHTML = `<p class="lead">Cronologia in arrivo — la sessione di oggi è già stata salvata.</p>`;
-      break;
-    default:
+
+  if (hash === '#/') {
+    await renderOnboarding(root);
+  } else if (hash === '#/calibrazione') {
+    await renderCalibration(root);
+  } else if (hash === '#/test') {
+    await renderTest(root);
+  } else if (hash === '#/cronologia') {
+    await renderHistory(root);
+  } else if (hash.startsWith('#/cronologia/')) {
+    const id = Number(hash.slice('#/cronologia/'.length));
+    if (Number.isInteger(id) && id > 0) {
+      await renderHistoryDetail(root, id);
+    } else {
       placeholder('sconosciuta');
+    }
+  } else {
+    placeholder('sconosciuta');
   }
 }
 
