@@ -9,8 +9,20 @@
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
 </head>
 <body>
-  <header class="wordmark" role="banner"><a href="../" aria-label="Vai a Iridis principale">IRIDIS</a> · Visione</header>
+  <header class="wordmark" role="banner">
+    <a href="../" aria-label="Vai a Iridis principale">
+      <svg width="20" height="20" viewBox="0 0 28 28" fill="none" aria-hidden="true" focusable="false">
+        <circle cx="14" cy="14" r="13" stroke="#1a1814" stroke-width="1.5"/>
+        <circle cx="14" cy="14" r="6" fill="#c8841a"/>
+        <circle cx="14" cy="14" r="2.5" fill="#1a1814"/>
+      </svg>
+      IRIDIS
+    </a> · Visione
+  </header>
   <main id="root" role="main"></main>
+  <footer class="page-footer" role="contentinfo">
+    Iridis Visione · Self-monitoring AMD · Non è un dispositivo medico · POC v0.2.0
+  </footer>
   <script type="module" src="src/app.mjs"></script>
 </body>
 </html>
