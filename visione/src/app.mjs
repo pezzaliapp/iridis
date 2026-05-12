@@ -26,7 +26,7 @@ async function render() {
       await renderTest(root);
       break;
     case '#/cronologia':
-      placeholder('cronologia');
+      root.innerHTML = `<p class="lead">Cronologia in arrivo — la sessione di oggi è già stata salvata.</p>`;
       break;
     default:
       placeholder('sconosciuta');

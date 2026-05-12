@@ -219,12 +219,6 @@ a:focus-visible {
   outline-offset: 3px;
 }
 
-.test-preamble {
-  font-size: 18px;
-  color: var(--fg-muted);
-  margin: 0 0 24px;
-}
-
 .grid-stage {
   display: flex;
   justify-content: center;
@@ -236,4 +230,47 @@ a:focus-visible {
   display: block;
   background: var(--bg);
   flex-shrink: 0;
+  touch-action: none;
+  cursor: crosshair;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.eye-label {
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+  margin: 16px 0;
+}
+
+.test-controls {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin: 24px 0 16px;
+  flex-wrap: wrap;
+}
+
+.secondary-btn {
+  min-height: 60px;
+  padding: 16px 24px;
+  font-size: 18px;
+  font-weight: 600;
+  background: var(--bg);
+  color: var(--fg);
+  border: 2px solid var(--fg);
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.secondary-btn:disabled {
+  color: var(--cta-disabled-fg);
+  border-color: var(--border);
+  cursor: not-allowed;
+}
+
+.secondary-btn:focus-visible {
+  outline: 3px solid var(--fg);
+  outline-offset: 3px;
 }
