@@ -17,11 +17,11 @@ Iridis è un **prototipo di screening oculare via fotografia smartphone**. Stima
 
 Stadio attuale: **POC v0.1** — euristiche colorimetriche trasparenti, eseguite interamente client-side.
 
-### Modulo Visione (in pianificazione)
+### Modulo Visione (POC v0.2.0)
 
-Un secondo modulo, **Iridis Visione**, vivrà in `iridis/visione/` (in pianificazione, ancora senza codice).
-Target diverso: autocontrollo domiciliare per pazienti con maculopatia (AMD), griglia di Amsler digitale, UX disegnata per 80+, **niente fotocamera**.
-Razionale clinico, review delle app esistenti e posizionamento MDR: `docs/visione/research.md`.
+Funzionalmente completo end-to-end — onboarding con disclaimer integrato, calibrazione one-shot via carta ISO 7810, test interattivo monoculare dx→sx con annotazione tap/drag, salvataggio sessioni in IndexedDB, cronologia con dettaglio sessione, PDF report di monitoraggio (4 sezioni: sommario / cronologia compatta / sessioni con segnalazioni / fonti scientifiche), export .ics per promemoria calendario, cancellazione dati GDPR art.17. NON validato clinicamente, NON dispositivo medico ai sensi MDR 2017/745. Da testare con utente reale prima di qualsiasi divulgazione pubblica.
+
+Riferimenti: `docs/visione/research.md` (razionale clinico), `docs/visione/decisions.md` (scelte di prodotto e implementative), `docs/visione/roadmap-visione.md` (lavori futuri).
 
 ## 2 · Cosa Iridis NON è
 
