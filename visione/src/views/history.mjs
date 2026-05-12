@@ -1,4 +1,5 @@
 import { store } from '../store.mjs';
+import { exportMonitoringReport } from '../pdf.mjs';
 
 const DISCLAIMER = 'Questo strumento non sostituisce la visita oculistica e non è un dispositivo medico.';
 
@@ -55,10 +56,29 @@ export async function renderHistory(container) {
   container.innerHTML = `
     <h1>Cronologia</h1>
     <p class="disclaimer-band">${DISCLAIMER}</p>
+    <div class="cronologia-actions">
+      <button type="button" class="cta" id="export-btn">Esporta report di monitoraggio</button>
+    </div>
     <div class="session-list">
       ${cards}
     </div>
   `;
+
+  const exportBtn = container.querySelector('#export-btn');
+  const originalLabel = exportBtn.textContent;
+  exportBtn.addEventListener('click', async () => {
+    exportBtn.disabled = true;
+    exportBtn.textContent = 'Generazione in corso…';
+    try {
+      await exportMonitoringReport();
+    } catch (err) {
+      console.error('[Iridis Visione] export PDF fallito', err);
+      window.alert('Impossibile generare il PDF. Riprova o ricarica la pagina.');
+    } finally {
+      exportBtn.disabled = false;
+      exportBtn.textContent = originalLabel;
+    }
+  });
 }
 
 export async function renderHistoryDetail(container, id) {

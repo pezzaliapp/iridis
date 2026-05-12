@@ -283,6 +283,13 @@ a:focus-visible {
   margin: 16px 0 24px;
 }
 
+.cronologia-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 16px 0 24px;
+}
+
 .session-list {
   display: flex;
   flex-direction: column;

@@ -2,7 +2,7 @@ const DB_NAME = 'iridis-visione';
 const DB_VERSION = 1;
 const SCHEMA_VERSION = 1;
 
-export const APP_VERSION = '0.1.0';
+export const APP_VERSION = '0.2.0';
 
 const LEGACY_KEYS = {
   calibration: 'iridis-visione/calibration',

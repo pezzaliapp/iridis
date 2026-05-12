@@ -130,6 +130,8 @@ async function saveAndAdvance(container) {
     timestamp: new Date().toISOString(),
     rightEye: canvasDataUrls.right,
     leftEye: canvasDataUrls.left,
+    rightEyeMarkCount: strokes.right.length,
+    leftEyeMarkCount: strokes.left.length,
     pixelsPerMm: calibration.pixelsPerMm,
     schemaVersion: 1,
     frequencyAtTime: frequency ?? null,
