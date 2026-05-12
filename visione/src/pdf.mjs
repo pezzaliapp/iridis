@@ -63,7 +63,7 @@ function buildSummary(sessions) {
   const unknown = total - withAlterations - withoutAlterations;
 
   if (total === 0) {
-    return { total: 0, withAlterations: 0, withoutAlterations: 0, unknown: 0, first: null, last: null, daysCovered: 0, avgPerWeek: 'nessuna sessione' };
+    return { total: 0, withAlterations: 0, withoutAlterations: 0, unknown: 0, first: null, last: null, daysCovered: 0 };
   }
 
   const timestamps = sessions.map(s => new Date(s.timestamp).getTime());
@@ -71,15 +71,7 @@ function buildSummary(sessions) {
   const last = new Date(Math.max(...timestamps));
   const daysCovered = Math.max(1, Math.round((last - first) / (1000 * 60 * 60 * 24)));
 
-  let avgPerWeek;
-  if (total < 2) {
-    avgPerWeek = 'sessione singola (non calcolabile)';
-  } else {
-    const weeks = Math.max(1 / 7, daysCovered / 7);
-    avgPerWeek = `${(total / weeks).toFixed(1)} sessioni / settimana`;
-  }
-
-  return { total, withAlterations, withoutAlterations, unknown, first, last, daysCovered, avgPerWeek };
+  return { total, withAlterations, withoutAlterations, unknown, first, last, daysCovered };
 }
 
 function drawDisclaimerBand(doc, x, y) {
@@ -141,22 +133,58 @@ function drawSummaryPage(doc, sessions, currentFrequency) {
     return;
   }
 
-  const dayWord = s.daysCovered === 1 ? 'giorno' : 'giorni';
-  doc.text(
-    `Periodo coperto: dal ${formatItalianDateShort(s.first)} al ${formatItalianDateShort(s.last)} (${s.daysCovered} ${dayWord})`,
-    MARGIN, y
-  );
-  y += 7;
+  const freqInsufficient = s.total < 5 || s.daysCovered < 14;
+  const allUnknown = s.unknown === s.total;
+
+  if (freqInsufficient && allUnknown) {
+    const message = "Dati ancora insufficienti per generare un sommario di monitoraggio. Continua a usare l'app: il report diventerà significativo dopo 2-3 settimane di sessioni regolari.";
+    const lines = doc.splitTextToSize(message, CONTENT_W);
+    doc.text(lines, MARGIN, y);
+    y += lines.length * 6 + 4;
+    doc.text(`Sessioni totali finora: ${s.total}`, MARGIN, y); y += 7;
+    doc.text(`Regime di sorveglianza attuale: ${formatFrequency(currentFrequency)}`, MARGIN, y);
+    return;
+  }
+
+  let periodText;
+  if (s.daysCovered === 1) {
+    periodText = `Periodo coperto: ${formatItalianDateShort(s.first)} (1 giornata)`;
+  } else {
+    periodText = `Periodo coperto: dal ${formatItalianDateShort(s.first)} al ${formatItalianDateShort(s.last)} (${s.daysCovered} giorni)`;
+  }
+  doc.text(periodText, MARGIN, y); y += 7;
 
   doc.text(`Sessioni totali: ${s.total}`, MARGIN, y); y += 7;
-  doc.text(`   Senza segnalazioni: ${s.withoutAlterations}`, MARGIN, y); y += 6;
-  doc.text(`   Con segnalazioni: ${s.withAlterations}`, MARGIN, y); y += 6;
-  if (s.unknown > 0) {
-    doc.text(`   Stato non rilevato: ${s.unknown}`, MARGIN, y); y += 6;
-  }
-  y += 3;
 
-  doc.text(`Frequenza media: ${s.avgPerWeek}`, MARGIN, y); y += 7;
+  if (allUnknown) {
+    doc.text('Stato segnalazioni: non disponibile', MARGIN, y); y += 6;
+    doc.setFontSize(9);
+    doc.setTextColor(100);
+    doc.text("(sessioni create prima dell'aggiornamento del report)", MARGIN, y); y += 7;
+    doc.setFontSize(11);
+    doc.setTextColor(0);
+  } else {
+    doc.text(`   Senza segnalazioni: ${s.withoutAlterations}`, MARGIN, y); y += 6;
+    doc.text(`   Con segnalazioni: ${s.withAlterations}`, MARGIN, y); y += 6;
+    if (s.unknown > 0) {
+      doc.text(`   Sessioni di anteprima senza dati di esito: ${s.unknown}`, MARGIN, y); y += 6;
+    }
+    y += 3;
+  }
+
+  if (freqInsufficient) {
+    doc.text('Frequenza media: dati insufficienti', MARGIN, y); y += 6;
+    doc.setFontSize(9);
+    doc.setTextColor(100);
+    doc.text('(servono almeno 14 giorni di monitoraggio)', MARGIN, y); y += 7;
+    doc.setFontSize(11);
+    doc.setTextColor(0);
+  } else {
+    const weeks = s.daysCovered / 7;
+    const avgPerWeek = `${(s.total / weeks).toFixed(1)} sessioni / settimana`;
+    doc.text(`Frequenza media: ${avgPerWeek}`, MARGIN, y); y += 7;
+  }
+
   doc.text(`Regime di sorveglianza attuale: ${formatFrequency(currentFrequency)}`, MARGIN, y);
 }
 
